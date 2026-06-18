@@ -500,8 +500,6 @@
                 </div>
                 <!-- Logged in -->
                 <div id="headerUser" style="display:none;align-items:center;gap:10px;display:none">
-                    <span id="planBadge" class="plan-free">PLAN GRATIS</span>
-                    <button class="btn-upgrade" id="upgradeBtn" onclick="showLimitModal()">⭐ Pásate a Premium</button>
                     <div class="user-avatar" id="userAvatar" onclick="handleLogout()" title="Cerrar sesión">?</div>
                 </div>
             </div>
@@ -542,7 +540,7 @@
                     oninput="updateWordCount()"
                 ></textarea>
                 <div class="card-footer">
-                    <span class="wc-text" id="wcText">0 / 2.000 palabras</span>
+                    <span class="wc-text" id="wcText">0 palabras</span>
                     <button class="btn-paraphrase" id="paraphraseBtn" onclick="handleParaphrase()">Parafrasear</button>
                 </div>
             </div>
@@ -610,25 +608,12 @@
     </div>
 </div>
 
-<!-- ===== LIMIT MODAL ===== -->
-<div class="modal-overlay" id="limitModal" onclick="closeLimitModalOutside(event)">
-    <div class="modal-box limit-box">
-        <h2>⚠️ Límite alcanzado</h2>
-        <p>Tu texto supera el límite de 2.000 palabras del plan gratuito. Actualiza a Premium para parafrasear textos más largos sin restricciones.</p>
-        <div class="limit-btns">
-            <button class="btn-limit-cancel" onclick="closeLimitModal()">Cancelar</button>
-            <button class="btn-limit-premium" onclick="handleUpgrade()">Actualizar a Premium</button>
-        </div>
-    </div>
-</div>
 
 <script>
     const API_URL = 'http://127.0.0.1:8000';
     let authToken = null;
     let currentUser = null;
-    let currentPlan = 'free';
     let currentMode = 'estandar';
-    const FREE_LIMIT = 2000;
 
     // ===== AUTH MODAL =====
 
@@ -725,17 +710,7 @@
         }
     }
 
-    async function fetchUserInfo() {
-        try {
-            const res = await fetch(`${API_URL}/users/me`, {
-                headers: { 'Authorization': `Bearer ${authToken}` }
-            });
-            if (res.ok) {
-                const user = await res.json();
-                currentPlan = user.plan;
-            }
-        } catch {}
-    }
+    async function fetchUserInfo() {}
 
     function handleLogout() {
         authToken = null;
@@ -750,27 +725,12 @@
     function updateHeaderUI() {
         const isLoggedIn = !!authToken;
         document.getElementById('headerGuest').style.display = isLoggedIn ? 'none' : 'block';
-
         const headerUser = document.getElementById('headerUser');
         headerUser.style.display = isLoggedIn ? 'flex' : 'none';
-
         document.getElementById('sidebarLogout').style.display = isLoggedIn ? 'flex' : 'none';
-
         if (isLoggedIn) {
             document.getElementById('userAvatar').textContent = currentUser[0].toUpperCase();
-            const badge = document.getElementById('planBadge');
-            const upgradeBtn = document.getElementById('upgradeBtn');
-            if (currentPlan === 'premium') {
-                badge.className = 'plan-premium';
-                badge.textContent = '⭐ PREMIUM';
-                upgradeBtn.classList.add('hidden');
-            } else {
-                badge.className = 'plan-free';
-                badge.textContent = 'PLAN GRATIS';
-                upgradeBtn.classList.remove('hidden');
-            }
         }
-
         updateWordCount();
     }
 
@@ -789,10 +749,7 @@
     function updateWordCount() {
         const text = document.getElementById('originalText').value;
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-        const limit = currentPlan === 'premium' ? '∞' : FREE_LIMIT.toLocaleString('es-ES');
-        const el = document.getElementById('wcText');
-        el.textContent = `${words} / ${limit} palabras`;
-        el.className = 'wc-text' + (currentPlan !== 'premium' && words > FREE_LIMIT ? ' over' : '');
+        document.getElementById('wcText').textContent = `${words} palabras`;
     }
 
     async function pasteFromClipboard() {
@@ -845,9 +802,6 @@
                 authToken = null;
                 updateHeaderUI();
                 openAuthModal('login');
-            } else if (res.status === 402) {
-                showLimitModal();
-                resetResult();
             } else if (!res.ok) {
                 document.getElementById('resultPlaceholder').textContent = 'Error: ' + (data.detail || 'No se pudo parafrasear.');
                 document.getElementById('resultPlaceholder').style.display = 'block';
