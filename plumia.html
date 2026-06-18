@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plumia - Parafraseo de Textos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f4f9;
+        }
+
+        /* ===== APP LAYOUT ===== */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 70px;
+            background: #2d1b69;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo {
+            color: #c4b5fd;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            width: 100%;
+            padding: 9px 4px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.45);
+            font-size: 9px;
+            text-align: center;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .sidebar-item:hover { color: rgba(255,255,255,0.85); background: rgba(255,255,255,0.08); }
+
+        .sidebar-item.active {
+            color: white;
+            background: rgba(255,255,255,0.13);
+        }
+
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 4px; bottom: 4px;
+            width: 3px;
+            background: #a78bfa;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .si-icon { font-size: 18px; line-height: 1; }
+        .sidebar-spacer { flex: 1; }
+
+        /* Main */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            background: white;
+            border-bottom: 1px solid #ebebf0;
+            flex-shrink: 0;
+        }
+
+        .header-title { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        /* Auth buttons (logged out) */
+        .btn-header-login {
+            padding: 7px 16px;
+            border: 1.5px solid #5b21b6;
+            border-radius: 20px;
+            background: white;
+            color: #5b21b6;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-header-login:hover { background: #f3f0ff; }
+
+        .btn-header-register {
+            padding: 7px 16px;
+            border: none;
+            border-radius: 20px;
+            background: #5b21b6;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-header-register:hover { background: #4c1d95; }
+
+        /* Plan badge (logged in) */
+        .plan-free {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .plan-premium {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-upgrade {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #ff6b6b, #ff9800);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-upgrade:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,107,107,0.4); }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Mode tabs */
+        .mode-tabs-bar {
+            background: white;
+            border-bottom: 1px solid #ebebf0;
+            padding: 0 24px;
+            display: flex;
+            overflow-x: auto;
+            flex-shrink: 0;
+            scrollbar-width: none;
+        }
+        .mode-tabs-bar::-webkit-scrollbar { display: none; }
+
+        .mode-tab {
+            padding: 11px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #777;
+            cursor: pointer;
+            border-bottom: 2.5px solid transparent;
+            white-space: nowrap;
+            transition: all 0.15s;
+            flex-shrink: 0;
+            font-family: inherit;
+            background: none;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+        }
+        .mode-tab:hover { color: #5b21b6; }
+        .mode-tab.active { color: #5b21b6; border-bottom-color: #5b21b6; font-weight: 600; }
+
+        /* Editor */
+        .editor-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 24px;
+            gap: 14px;
+            overflow-y: auto;
+            background: #f4f4f9;
+        }
+
+        .editor-card, .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .editor-hint { font-size: 13px; color: #888; margin-bottom: 10px; line-height: 1.5; }
+
+        .editor-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+
+        .btn-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 13px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            background: white;
+            color: #555;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn-sm:hover { border-color: #5b21b6; color: #5b21b6; }
+
+        .custom-instr { display: none; margin-bottom: 10px; }
+        .custom-instr label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 5px;
+        }
+        .custom-instr input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        .custom-instr input:focus { outline: none; border-color: #5b21b6; }
+
+        .input-text {
+            width: 100%;
+            min-height: 150px;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            color: #1a1a2e;
+            resize: none;
+            font-family: inherit;
+            line-height: 1.7;
+        }
+        .input-text::placeholder { color: #c5c5c5; }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f5;
+            margin-top: 10px;
+        }
+
+        .wc-text { font-size: 13px; color: #aaa; }
+        .wc-text.over { color: #e74c3c; font-weight: 600; }
+
+        .btn-paraphrase {
+            background: #5b21b6;
+            color: white;
+            border: none;
+            padding: 10px 26px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-paraphrase:hover { background: #4c1d95; }
+        .btn-paraphrase:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Result */
+        .result-placeholder { font-size: 14px; color: #c5c5c5; text-align: center; padding: 28px 0; }
+
+        .spinner-row {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 24px 0;
+            color: #5b21b6;
+            font-size: 14px;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2.5px solid #e0d4f7;
+            border-top-color: #5b21b6;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-text { display: none; font-size: 15px; color: #1a1a2e; line-height: 1.7; white-space: pre-wrap; }
+
+        .result-footer {
+            display: none;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f5;
+        }
+
+        /* ===== AUTH MODAL ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            padding: 36px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.28);
+        }
+
+        .modal-logo {
+            text-align: center;
+            font-size: 26px;
+            font-weight: 800;
+            color: #5b21b6;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitle { text-align: center; color: #999; font-size: 13px; margin-bottom: 24px; }
+
+        .modal-section-title { font-size: 17px; font-weight: 600; color: #222; margin-bottom: 16px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus { outline: none; border-color: #5b21b6; }
+
+        .btn-modal-main {
+            width: 100%;
+            padding: 12px;
+            background: #5b21b6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+        .btn-modal-main:hover { background: #4c1d95; }
+
+        .modal-toggle { text-align: center; margin-top: 14px; font-size: 13px; color: #999; }
+        .modal-toggle a { color: #5b21b6; font-weight: 600; cursor: pointer; text-decoration: none; }
+
+        .modal-close-x {
+            position: absolute;
+            top: 12px; right: 16px;
+            font-size: 20px;
+            color: #aaa;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close-x:hover { color: #555; }
+
+        .msg-error { color: #e74c3c; font-size: 13px; margin-top: 8px; display: none; }
+        .msg-success { color: #16a34a; font-size: 13px; margin-top: 8px; display: none; }
+
+        /* Limit modal */
+        .limit-box {
+            text-align: center;
+        }
+        .limit-box h2 { font-size: 20px; color: #1a1a2e; margin-bottom: 12px; }
+        .limit-box p { font-size: 14px; color: #777; line-height: 1.6; margin-bottom: 24px; }
+        .limit-btns { display: flex; gap: 10px; justify-content: center; }
+
+        .btn-limit-cancel {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+        }
+        .btn-limit-premium {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff9800, #ff6b6b);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+        .btn-limit-premium:hover { transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+
+<!-- ===== APP (siempre visible) ===== -->
+<div class="app-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">plumia</div>
+        <div class="sidebar-item" title="Crear nuevo"><span class="si-icon">✏️</span><span>Crear<br>nuevo</span></div>
+        <div class="sidebar-item active" title="Parafrasear"><span class="si-icon">↔️</span><span>Parafrasear</span></div>
+        <div class="sidebar-item" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
+        <div class="sidebar-item" title="Corrector ortográfico"><span class="si-icon">✓</span><span>Corrector<br>ortog.</span></div>
+        <div class="sidebar-item" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
+        <div class="sidebar-item" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
+        <div class="sidebar-item" title="Humanizador de IA"><span class="si-icon">🪄</span><span>Humaniz.<br>de IA</span></div>
+        <div class="sidebar-item" title="Chat IA"><span class="si-icon">💬</span><span>Chat IA</span></div>
+        <div class="sidebar-item" title="Más"><span class="si-icon">···</span><span>Más</span></div>
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-item" id="sidebarLogout" onclick="handleLogout()" title="Cerrar sesión" style="display:none">
+            <span class="si-icon">🚪</span><span>Salir</span>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="main-content">
+
+        <!-- Header -->
+        <div class="app-header">
+            <div class="header-title">Parafrasear</div>
+            <div class="header-right">
+                <!-- Logged out -->
+                <div id="headerGuest">
+                    <div style="display:flex;gap:8px">
+                        <button class="btn-header-login" onclick="openAuthModal('login')">Iniciar sesión</button>
+                        <button class="btn-header-register" onclick="openAuthModal('register')">Registrarse</button>
+                    </div>
+                </div>
+                <!-- Logged in -->
+                <div id="headerUser" style="display:none;align-items:center;gap:10px;display:none">
+                    <span id="planBadge" class="plan-free">PLAN GRATIS</span>
+                    <button class="btn-upgrade" id="upgradeBtn" onclick="showLimitModal()">⭐ Pásate a Premium</button>
+                    <div class="user-avatar" id="userAvatar" onclick="handleLogout()" title="Cerrar sesión">?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode tabs -->
+        <div class="mode-tabs-bar">
+            <button class="mode-tab active" data-mode="estandar" onclick="selectMode(this)">Estándar</button>
+            <button class="mode-tab" data-mode="humanizar" onclick="selectMode(this)">Humanizar</button>
+            <button class="mode-tab" data-mode="formal" onclick="selectMode(this)">Formal</button>
+            <button class="mode-tab" data-mode="academico" onclick="selectMode(this)">Académico</button>
+            <button class="mode-tab" data-mode="simple" onclick="selectMode(this)">Simple</button>
+            <button class="mode-tab" data-mode="creativo" onclick="selectMode(this)">Creativo</button>
+            <button class="mode-tab" data-mode="ampliar" onclick="selectMode(this)">Ampliar</button>
+            <button class="mode-tab" data-mode="acortar" onclick="selectMode(this)">Acortar</button>
+            <button class="mode-tab" data-mode="personalizado" onclick="selectMode(this)">Personalizado</button>
+        </div>
+
+        <!-- Editor -->
+        <div class="editor-body">
+
+            <div class="editor-card">
+                <div class="editor-hint">
+                    Si quieres parafrasear un texto, escríbelo directamente o pégalo aquí. Después, haz clic en «Parafrasear».
+                </div>
+                <div class="editor-btns">
+                    <button class="btn-sm" onclick="pasteFromClipboard()">📋 Pegar</button>
+                    <button class="btn-sm" onclick="clearText()">✕ Limpiar</button>
+                </div>
+                <div class="custom-instr" id="customInstrGroup">
+                    <label>Instrucción personalizada</label>
+                    <input type="text" id="customInstruction" placeholder="ej. Reescribe de forma más persuasiva y directa">
+                </div>
+                <textarea
+                    class="input-text"
+                    id="originalText"
+                    placeholder="Escribe o pega tu texto aquí..."
+                    oninput="updateWordCount()"
+                ></textarea>
+                <div class="card-footer">
+                    <span class="wc-text" id="wcText">0 / 2.000 palabras</span>
+                    <button class="btn-paraphrase" id="paraphraseBtn" onclick="handleParaphrase()">Parafrasear</button>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div id="resultPlaceholder" class="result-placeholder">El resultado de tu reescritura aparecerá aquí.</div>
+                <div id="spinnerRow" class="spinner-row">
+                    <div class="spinner"></div>
+                    Parafraseando tu texto...
+                </div>
+                <div id="resultText" class="result-text"></div>
+                <div id="resultFooter" class="result-footer">
+                    <button class="btn-sm" onclick="copyResult()">📋 Copiar resultado</button>
+                    <button class="btn-sm" onclick="downloadResult()">⬇️ Descargar</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===== AUTH MODAL ===== -->
+<div class="modal-overlay" id="authModal" onclick="closeAuthModalOutside(event)">
+    <div class="modal-box" style="position:relative">
+        <span class="modal-close-x" onclick="closeAuthModal()">×</span>
+        <div class="modal-logo">plumia</div>
+        <div class="modal-subtitle">Herramienta de reescritura con IA</div>
+
+        <!-- Login -->
+        <div id="modalLoginForm">
+            <div class="modal-section-title">Iniciar sesión</div>
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="loginEmail" placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="loginPassword" placeholder="••••••••">
+            </div>
+            <button class="btn-modal-main" onclick="handleLogin()">Iniciar sesión</button>
+            <div id="loginError" class="msg-error"></div>
+            <div class="modal-toggle">
+                ¿No tienes cuenta? <a onclick="switchModalForm('register')">Regístrate aquí</a>
+            </div>
+        </div>
+
+        <!-- Register -->
+        <div id="modalRegisterForm" style="display:none">
+            <div class="modal-section-title">Crear cuenta</div>
+            <div class="form-group">
+                <label>Correo electrónico</label>
+                <input type="email" id="registerEmail" placeholder="tu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="registerPassword" placeholder="••••••••">
+            </div>
+            <button class="btn-modal-main" onclick="handleRegister()">Crear cuenta</button>
+            <div id="registerError" class="msg-error"></div>
+            <div id="registerSuccess" class="msg-success"></div>
+            <div class="modal-toggle">
+                ¿Ya tienes cuenta? <a onclick="switchModalForm('login')">Inicia sesión aquí</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== LIMIT MODAL ===== -->
+<div class="modal-overlay" id="limitModal" onclick="closeLimitModalOutside(event)">
+    <div class="modal-box limit-box">
+        <h2>⚠️ Límite alcanzado</h2>
+        <p>Tu texto supera el límite de 2.000 palabras del plan gratuito. Actualiza a Premium para parafrasear textos más largos sin restricciones.</p>
+        <div class="limit-btns">
+            <button class="btn-limit-cancel" onclick="closeLimitModal()">Cancelar</button>
+            <button class="btn-limit-premium" onclick="handleUpgrade()">Actualizar a Premium</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:8000';
+    let authToken = null;
+    let currentUser = null;
+    let currentPlan = 'free';
+    let currentMode = 'estandar';
+    const FREE_LIMIT = 2000;
+
+    // ===== AUTH MODAL =====
+
+    function openAuthModal(form) {
+        switchModalForm(form);
+        document.getElementById('authModal').style.display = 'flex';
+    }
+
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+    }
+
+    function closeAuthModalOutside(e) {
+        if (e.target === document.getElementById('authModal')) closeAuthModal();
+    }
+
+    function switchModalForm(form) {
+        document.getElementById('modalLoginForm').style.display = form === 'login' ? 'block' : 'none';
+        document.getElementById('modalRegisterForm').style.display = form === 'register' ? 'block' : 'none';
+        document.getElementById('loginError').style.display = 'none';
+        document.getElementById('registerError').style.display = 'none';
+        document.getElementById('registerSuccess').style.display = 'none';
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const errDiv = document.getElementById('loginError');
+        errDiv.style.display = 'none';
+
+        if (!email || !password) {
+            errDiv.textContent = 'Completa todos los campos.';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username: email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                errDiv.textContent = data.detail || 'Email o contraseña incorrectos.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            authToken = data.access_token;
+            currentUser = email;
+            await fetchUserInfo();
+            closeAuthModal();
+            updateHeaderUI();
+        } catch {
+            errDiv.textContent = 'Error de conexión. ¿Está el servidor corriendo?';
+            errDiv.style.display = 'block';
+        }
+    }
+
+    async function handleRegister() {
+        const email = document.getElementById('registerEmail').value.trim();
+        const password = document.getElementById('registerPassword').value;
+        const errDiv = document.getElementById('registerError');
+        const okDiv = document.getElementById('registerSuccess');
+        errDiv.style.display = 'none';
+        okDiv.style.display = 'none';
+
+        if (!email || !password) {
+            errDiv.textContent = 'Completa todos los campos.';
+            errDiv.style.display = 'block';
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                errDiv.textContent = data.detail || 'Error al registrar.';
+                errDiv.style.display = 'block';
+                return;
+            }
+            okDiv.textContent = '¡Cuenta creada! Ahora inicia sesión.';
+            okDiv.style.display = 'block';
+            document.getElementById('registerEmail').value = '';
+            document.getElementById('registerPassword').value = '';
+            setTimeout(() => switchModalForm('login'), 2000);
+        } catch {
+            errDiv.textContent = 'Error de conexión.';
+            errDiv.style.display = 'block';
+        }
+    }
+
+    async function fetchUserInfo() {
+        try {
+            const res = await fetch(`${API_URL}/users/me`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (res.ok) {
+                const user = await res.json();
+                currentPlan = user.plan;
+            }
+        } catch {}
+    }
+
+    function handleLogout() {
+        authToken = null;
+        currentUser = null;
+        currentPlan = 'free';
+        document.getElementById('originalText').value = '';
+        updateWordCount();
+        resetResult();
+        updateHeaderUI();
+    }
+
+    function updateHeaderUI() {
+        const isLoggedIn = !!authToken;
+        document.getElementById('headerGuest').style.display = isLoggedIn ? 'none' : 'block';
+
+        const headerUser = document.getElementById('headerUser');
+        headerUser.style.display = isLoggedIn ? 'flex' : 'none';
+
+        document.getElementById('sidebarLogout').style.display = isLoggedIn ? 'flex' : 'none';
+
+        if (isLoggedIn) {
+            document.getElementById('userAvatar').textContent = currentUser[0].toUpperCase();
+            const badge = document.getElementById('planBadge');
+            const upgradeBtn = document.getElementById('upgradeBtn');
+            if (currentPlan === 'premium') {
+                badge.className = 'plan-premium';
+                badge.textContent = '⭐ PREMIUM';
+                upgradeBtn.classList.add('hidden');
+            } else {
+                badge.className = 'plan-free';
+                badge.textContent = 'PLAN GRATIS';
+                upgradeBtn.classList.remove('hidden');
+            }
+        }
+
+        updateWordCount();
+    }
+
+    // ===== MODES =====
+
+    function selectMode(el) {
+        document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        currentMode = el.dataset.mode;
+        document.getElementById('customInstrGroup').style.display =
+            currentMode === 'personalizado' ? 'block' : 'none';
+    }
+
+    // ===== EDITOR =====
+
+    function updateWordCount() {
+        const text = document.getElementById('originalText').value;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const limit = currentPlan === 'premium' ? '∞' : FREE_LIMIT.toLocaleString('es-ES');
+        const el = document.getElementById('wcText');
+        el.textContent = `${words} / ${limit} palabras`;
+        el.className = 'wc-text' + (currentPlan !== 'premium' && words > FREE_LIMIT ? ' over' : '');
+    }
+
+    async function pasteFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('originalText').value = text;
+            updateWordCount();
+        } catch {
+            alert('No se pudo acceder al portapapeles. Pega con Ctrl+V.');
+        }
+    }
+
+    function clearText() {
+        document.getElementById('originalText').value = '';
+        updateWordCount();
+        resetResult();
+    }
+
+    async function handleParaphrase() {
+        if (!authToken) {
+            openAuthModal('login');
+            return;
+        }
+
+        const text = document.getElementById('originalText').value.trim();
+        if (!text) { alert('Escribe algo para parafrasear.'); return; }
+
+        const btn = document.getElementById('paraphraseBtn');
+        btn.disabled = true;
+        document.getElementById('spinnerRow').style.display = 'flex';
+        document.getElementById('resultPlaceholder').style.display = 'none';
+        document.getElementById('resultText').style.display = 'none';
+        document.getElementById('resultFooter').style.display = 'none';
+
+        try {
+            const customInstruction = document.getElementById('customInstruction').value.trim() || null;
+            const res = await fetch(`${API_URL}/paraphrase`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: JSON.stringify({ text, mode: currentMode, custom_instruction: customInstruction, language: 'es' })
+            });
+
+            const data = await res.json();
+            document.getElementById('spinnerRow').style.display = 'none';
+
+            if (res.status === 401 || res.status === 403) {
+                authToken = null;
+                updateHeaderUI();
+                openAuthModal('login');
+            } else if (res.status === 402) {
+                showLimitModal();
+                resetResult();
+            } else if (!res.ok) {
+                document.getElementById('resultPlaceholder').textContent = 'Error: ' + (data.detail || 'No se pudo parafrasear.');
+                document.getElementById('resultPlaceholder').style.display = 'block';
+            } else {
+                document.getElementById('resultText').textContent = data.result;
+                document.getElementById('resultText').style.display = 'block';
+                document.getElementById('resultFooter').style.display = 'flex';
+            }
+        } catch {
+            document.getElementById('spinnerRow').style.display = 'none';
+            document.getElementById('resultPlaceholder').textContent = 'Error de conexión. ¿Está el servidor corriendo?';
+            document.getElementById('resultPlaceholder').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function resetResult() {
+        document.getElementById('resultPlaceholder').textContent = 'El resultado de tu reescritura aparecerá aquí.';
+        document.getElementById('resultPlaceholder').style.display = 'block';
+        document.getElementById('spinnerRow').style.display = 'none';
+        document.getElementById('resultText').style.display = 'none';
+        document.getElementById('resultText').textContent = '';
+        document.getElementById('resultFooter').style.display = 'none';
+    }
+
+    // ===== RESULT ACTIONS =====
+
+    function copyResult() {
+        const text = document.getElementById('resultText').textContent;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => alert('Copiado al portapapeles.'));
+    }
+
+    function downloadResult() {
+        const original = document.getElementById('originalText').value;
+        const result = document.getElementById('resultText').textContent;
+        if (!result) return;
+        const content = `TEXTO ORIGINAL:\n${original}\n\n\nTEXTO PARAFRASEADO:\n${result}`;
+        const a = document.createElement('a');
+        a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+        a.download = 'plumia_' + Date.now() + '.txt';
+        a.click();
+    }
+
+    // ===== LIMIT MODAL =====
+
+    function showLimitModal() {
+        document.getElementById('limitModal').style.display = 'flex';
+    }
+
+    function closeLimitModal() {
+        document.getElementById('limitModal').style.display = 'none';
+    }
+
+    function closeLimitModalOutside(e) {
+        if (e.target === document.getElementById('limitModal')) closeLimitModal();
+    }
+
+    async function handleUpgrade() {
+        try {
+            const res = await fetch(`${API_URL}/users/me/upgrade`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            if (res.ok) {
+                currentPlan = 'premium';
+                updateHeaderUI();
+                closeLimitModal();
+                alert('¡Ya eres usuario Premium! Ahora puedes parafrasear textos sin límite.');
+            } else {
+                alert('Error al actualizar el plan.');
+            }
+        } catch {
+            alert('Error de conexión.');
+        }
+    }
+
+    // ===== KEYBOARD =====
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            if (['loginEmail','loginPassword'].includes(e.target.id)) handleLogin();
+            if (['registerEmail','registerPassword'].includes(e.target.id)) handleRegister();
+        }
+        if (e.key === 'Escape') {
+            closeAuthModal();
+            closeLimitModal();
+        }
+    });
+
+    // Init: mostrar la app directamente
+    updateHeaderUI();
+    updateWordCount();
+</script>
+</body>
+</html>
