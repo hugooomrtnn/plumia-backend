@@ -31,6 +31,27 @@ def get_client():
     return _client
 
 
+def detect_ai(text: str) -> dict:
+    import json, re
+    prompt = (
+        "Analiza el siguiente texto y determina si fue escrito por un humano o generado por IA. "
+        "Responde ÚNICAMENTE con un objeto JSON con esta estructura exacta, sin texto adicional:\n"
+        "{\"verdict\": \"Humano\", \"confidence\": 85, \"reason\": \"El texto presenta...\"}\n"
+        "El campo 'verdict' debe ser exactamente 'Humano', 'IA' o 'Mixto'. "
+        "'confidence' es un número del 0 al 100. 'reason' es una frase breve en español.\n\n"
+        "Texto a analizar:\n" + text
+    )
+    client = get_client()
+    response = client.models.generate_content(model="gemini-flash-lite-latest", contents=prompt)
+    match = re.search(r'\{[^{}]*\}', response.text.strip(), re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except Exception:
+            pass
+    return {"verdict": "Desconocido", "confidence": 0, "reason": "No se pudo analizar el texto."}
+
+
 def chat(message: str, history: list) -> str:
     contents = []
     for msg in history:

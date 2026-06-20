@@ -480,6 +480,30 @@
         .chat-send:hover { background: #4c1d95; }
         .chat-send:disabled { opacity: 0.45; cursor: not-allowed; }
 
+        /* ===== PROYECTOS ===== */
+        .projects-container { flex: 1; overflow-y: auto; padding: 20px 24px; }
+        .projects-empty { text-align: center; color: #9ca3af; font-size: 14px; padding: 60px 0; }
+        .projects-list { display: flex; flex-direction: column; gap: 10px; }
+        .project-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+        .project-card-info { flex: 1; min-width: 0; }
+        .project-card-title { font-size: 14px; font-weight: 600; color: #1a1a2e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .project-card-date { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+        .project-card-btns { display: flex; gap: 6px; flex-shrink: 0; }
+        .btn-project-load { background: #ede9fe; color: #5b21b6; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-project-load:hover { background: #ddd6fe; }
+        .btn-project-delete { background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-project-delete:hover { background: #fecaca; }
+
+        /* ===== DETECTOR IA RESULT ===== */
+        .detector-result { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; padding: 24px; }
+        .detector-verdict { font-size: 32px; font-weight: 800; }
+        .detector-verdict.human { color: #16a34a; }
+        .detector-verdict.ai { color: #dc2626; }
+        .detector-verdict.mixed { color: #d97706; }
+        .detector-confidence { font-size: 15px; color: #6b7280; }
+        .detector-reason-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; width: 100%; max-width: 420px; }
+        .detector-reason-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
         /* ===== COMING SOON ===== */
         .coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; }
         .coming-soon-icon { font-size: 52px; }
@@ -497,12 +521,11 @@
         <div class="sidebar-logo">plumia</div>
         <div class="sidebar-item" id="sbNew" onclick="handleNewDoc()" title="Crear nuevo"><span class="si-icon">✏️</span><span>Crear<br>nuevo</span></div>
         <div class="sidebar-item active" id="sbParaphrase" onclick="switchPanel('paraphrase','sbParaphrase','Parafrasear')" title="Parafrasear"><span class="si-icon">↔️</span><span>Parafrasear</span></div>
-        <div class="sidebar-item" id="sbProyectos" onclick="switchPanel('coming-soon','sbProyectos','Proyectos','📁')" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
+        <div class="sidebar-item" id="sbProyectos" onclick="switchPanel('proyectos','sbProyectos','Proyectos')" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
         <div class="sidebar-item" id="sbCorrector" onclick="switchPanel('corrector','sbCorrector','Corrector ortográfico')" title="Corrector ortográfico"><span class="si-icon">✓</span><span>Corrector<br>ortog.</span></div>
-        <div class="sidebar-item" id="sbDetectorIA" onclick="switchPanel('coming-soon','sbDetectorIA','Detector de IA','✨')" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
+        <div class="sidebar-item" id="sbDetectorIA" onclick="switchPanel('detector-ia','sbDetectorIA','Detector de IA')" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
         <div class="sidebar-item" id="sbDetectorPlagio" onclick="switchPanel('coming-soon','sbDetectorPlagio','Detector de plagio','🔍')" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
         <div class="sidebar-item" id="sbHumanizador" onclick="switchPanel('humanizador','sbHumanizador','Humanizador de IA')" title="Humanizador de IA"><span class="si-icon">🪄</span><span>Humaniz.<br>de IA</span></div>
-        <div class="sidebar-item" id="sbChat" onclick="switchPanel('chat','sbChat','Chat IA')" title="Chat IA"><span class="si-icon">💬</span><span>Chat IA</span></div>
         <div class="sidebar-item" title="Más"><span class="si-icon">···</span><span>Más</span></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item" id="sidebarLogout" onclick="handleLogout()" title="Cerrar sesión" style="display:none">
@@ -584,6 +607,7 @@
                 <div id="resultFooter" class="result-footer">
                     <button class="btn-sm" onclick="copyResult()">📋 Copiar resultado</button>
                     <button class="btn-sm" onclick="downloadResult()">⬇️ Descargar</button>
+                        <button class="btn-sm" onclick="saveCurrentResult()">💾 Guardar</button>
                 </div>
             </div>
 
@@ -645,18 +669,44 @@
             </div>
         </div>
 
-        <!-- ===== PANEL: CHAT ===== -->
-        <div id="panelChat" class="panel">
-            <div class="chat-container">
-                <div class="chat-messages" id="chatMessages">
-                    <div class="chat-empty" id="chatEmpty">
-                        <div class="chat-empty-icon">💬</div>
-                        <div>Empieza una conversación con la IA</div>
+        <!-- ===== PANEL: PROYECTOS ===== -->
+        <div id="panelProyectos" class="panel">
+            <div class="tool-hint">Tus textos guardados. Pulsa «💾 Guardar» en el resultado de cualquier herramienta para añadir uno.</div>
+            <div class="projects-container">
+                <div id="projectsEmpty" class="projects-empty">No tienes proyectos guardados todavía.</div>
+                <div id="projectsList" class="projects-list"></div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL: DETECTOR DE IA ===== -->
+        <div id="panelDetectorIA" class="panel">
+            <div class="tool-hint">Analiza si un texto fue escrito por una persona o generado por IA.</div>
+            <div class="editor-body">
+                <div class="editor-card">
+                    <div class="editor-hint">Pega el texto que quieres analizar.</div>
+                    <div class="editor-btns">
+                        <button class="btn-sm" onclick="pasteToEl('detectorIAInput')">📋 Pegar</button>
+                        <button class="btn-sm" onclick="clearDetectorIA()">✕ Limpiar</button>
+                    </div>
+                    <textarea class="input-text" id="detectorIAInput" placeholder="Pega aquí el texto a analizar..."></textarea>
+                    <div class="card-footer">
+                        <span></span>
+                        <button class="btn-paraphrase" id="detectorIABtn" onclick="handleDetectorIA()">Analizar</button>
                     </div>
                 </div>
-                <div class="chat-input-area">
-                    <textarea class="chat-input" id="chatInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
-                    <button class="chat-send" id="chatSendBtn" onclick="handleChat()">Enviar</button>
+                <div class="result-card">
+                    <div id="detectorIAPlaceholder" class="result-placeholder">El análisis aparecerá aquí.</div>
+                    <div id="detectorIASpinner" class="spinner-row"><div class="spinner"></div>Analizando texto...</div>
+                    <div id="detectorIAResult" style="display:none;">
+                        <div class="detector-result">
+                            <div class="detector-verdict" id="detectorIAVerdictEl"></div>
+                            <div class="detector-confidence" id="detectorIAConfidenceEl"></div>
+                            <div class="detector-reason-box">
+                                <div class="detector-reason-label">Análisis</div>
+                                <div style="font-size:14px; color:#374151; line-height:1.55;" id="detectorIAReasonEl"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1010,7 +1060,8 @@
         'paraphrase': 'panelParaphrase',
         'corrector': 'panelCorrector',
         'humanizador': 'panelHumanizador',
-        'chat': 'panelChat',
+        'proyectos': 'panelProyectos',
+        'detector-ia': 'panelDetectorIA',
         'coming-soon': 'panelComingSoon'
     };
 
@@ -1027,6 +1078,7 @@
             document.getElementById('comingSoonTitle').textContent = title;
             document.getElementById('comingSoonIcon').textContent = csIcon || '🔜';
         }
+        if (name === 'proyectos') loadProjects();
     }
 
     function handleNewDoc() {
@@ -1112,51 +1164,116 @@
         }
     }
 
-    // ===== CHAT =====
+    // ===== PROYECTOS =====
 
-    let chatHistory = [];
-
-    async function handleChat() {
-        if (!authToken) { openAuthModal('login'); return; }
-        const input = document.getElementById('chatInput');
-        const message = input.value.trim();
-        if (!message) return;
-
-        input.value = '';
-        document.getElementById('chatEmpty').style.display = 'none';
-
-        appendChatMsg('user', message);
-        chatHistory.push({ role: 'user', text: message });
-
-        const btn = document.getElementById('chatSendBtn');
-        btn.disabled = true;
-        const loadingEl = appendChatMsg('model', '···');
-
+    async function loadProjects() {
+        if (!authToken) return;
         try {
-            const res = await fetch(`${API_URL}/chat`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                body: JSON.stringify({ message, history: chatHistory.slice(0, -1) })
+            const res = await fetch(`${API_URL}/documents`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            const data = await res.json();
-            const reply = res.ok ? data.response : (data.detail || 'Error al responder.');
-            loadingEl.textContent = reply;
-            if (res.ok) chatHistory.push({ role: 'model', text: reply });
-        } catch {
-            loadingEl.textContent = 'Error de conexión.';
-        } finally {
-            btn.disabled = false;
-        }
+            if (!res.ok) return;
+            renderProjects(await res.json());
+        } catch {}
     }
 
-    function appendChatMsg(role, text) {
-        const msgs = document.getElementById('chatMessages');
-        const el = document.createElement('div');
-        el.className = `chat-msg ${role}`;
-        el.textContent = text;
-        msgs.appendChild(el);
-        msgs.scrollTop = msgs.scrollHeight;
-        return el;
+    function renderProjects(docs) {
+        const empty = document.getElementById('projectsEmpty');
+        const list = document.getElementById('projectsList');
+        list.innerHTML = '';
+        if (!docs || docs.length === 0) { empty.style.display = 'block'; return; }
+        empty.style.display = 'none';
+        docs.forEach(doc => {
+            const date = new Date(doc.updated_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+            const card = document.createElement('div');
+            card.className = 'project-card';
+            const info = document.createElement('div');
+            info.className = 'project-card-info';
+            info.innerHTML = `<div class="project-card-title">${escHtml(doc.title)}</div><div class="project-card-date">${date}</div>`;
+            const btns = document.createElement('div');
+            btns.className = 'project-card-btns';
+            const loadBtn = document.createElement('button');
+            loadBtn.className = 'btn-project-load';
+            loadBtn.textContent = 'Cargar';
+            loadBtn.onclick = () => { switchPanel('paraphrase','sbParaphrase','Parafrasear'); document.getElementById('originalText').value = doc.content; updateWordCount(); };
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn-project-delete';
+            delBtn.textContent = 'Eliminar';
+            delBtn.onclick = async () => {
+                if (!confirm('¿Eliminar este proyecto?')) return;
+                delBtn.disabled = true;
+                await fetch(`${API_URL}/documents/${doc.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}` } });
+                loadProjects();
+            };
+            btns.appendChild(loadBtn);
+            btns.appendChild(delBtn);
+            card.appendChild(info);
+            card.appendChild(btns);
+            list.appendChild(card);
+        });
+    }
+
+    function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    async function saveCurrentResult() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const result = document.getElementById('resultText').textContent.trim();
+        if (!result) { alert('No hay resultado para guardar.'); return; }
+        const original = document.getElementById('originalText').value.trim();
+        const title = original.slice(0, 60) + (original.length > 60 ? '...' : '');
+        try {
+            const res = await fetch(`${API_URL}/documents`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ title, content: result })
+            });
+            alert(res.ok ? 'Guardado en Proyectos.' : 'Error al guardar.');
+        } catch { alert('Error de conexión.'); }
+    }
+
+    // ===== DETECTOR DE IA =====
+
+    async function handleDetectorIA() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const text = document.getElementById('detectorIAInput').value.trim();
+        if (!text) { alert('Pega un texto para analizar.'); return; }
+        const btn = document.getElementById('detectorIABtn');
+        btn.disabled = true;
+        document.getElementById('detectorIASpinner').style.display = 'flex';
+        document.getElementById('detectorIAPlaceholder').style.display = 'none';
+        document.getElementById('detectorIAResult').style.display = 'none';
+        try {
+            const res = await fetch(`${API_URL}/detect-ai`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            document.getElementById('detectorIASpinner').style.display = 'none';
+            if (!res.ok) {
+                document.getElementById('detectorIAPlaceholder').textContent = data.detail || 'Error al analizar.';
+                document.getElementById('detectorIAPlaceholder').style.display = 'block';
+            } else {
+                const verdictEl = document.getElementById('detectorIAVerdictEl');
+                verdictEl.textContent = data.verdict;
+                verdictEl.className = 'detector-verdict ' + { 'Humano': 'human', 'IA': 'ai', 'Mixto': 'mixed' }[data.verdict] || '';
+                document.getElementById('detectorIAConfidenceEl').textContent = `${data.confidence}% de confianza`;
+                document.getElementById('detectorIAReasonEl').textContent = data.reason;
+                document.getElementById('detectorIAResult').style.display = 'block';
+            }
+        } catch {
+            document.getElementById('detectorIASpinner').style.display = 'none';
+            document.getElementById('detectorIAPlaceholder').textContent = 'Error de conexión.';
+            document.getElementById('detectorIAPlaceholder').style.display = 'block';
+        } finally { btn.disabled = false; }
+    }
+
+    function clearDetectorIA() {
+        document.getElementById('detectorIAInput').value = '';
+        document.getElementById('detectorIAPlaceholder').textContent = 'El análisis aparecerá aquí.';
+        document.getElementById('detectorIAPlaceholder').style.display = 'block';
+        document.getElementById('detectorIAResult').style.display = 'none';
+        document.getElementById('detectorIASpinner').style.display = 'none';
     }
 
     // ===== SHARED TOOL HELPERS =====
@@ -1187,19 +1304,6 @@
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => alert('Copiado al portapapeles.'));
     }
-
-    // ===== CHAT ENTER KEY =====
-    document.addEventListener('DOMContentLoaded', () => {
-        const chatInput = document.getElementById('chatInput');
-        if (chatInput) {
-            chatInput.addEventListener('keydown', e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleChat();
-                }
-            });
-        }
-    });
 
     // Init: mostrar la app directamente
     updateHeaderUI();
