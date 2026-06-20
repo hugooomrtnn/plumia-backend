@@ -459,6 +459,32 @@
             font-family: inherit;
         }
         .btn-limit-premium:hover { transform: translateY(-1px); }
+
+        /* ===== PANELS ===== */
+        .panel { display: none; flex-direction: column; flex: 1; overflow: hidden; min-height: 0; }
+        .panel.active { display: flex; }
+        .tool-hint { padding: 10px 24px; font-size: 13px; color: #6b7280; background: white; border-bottom: 1px solid #ebebf0; flex-shrink: 0; }
+
+        /* ===== CHAT ===== */
+        .chat-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; padding: 20px 24px 16px; gap: 12px; }
+        .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+        .chat-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 8px; color: #9ca3af; font-size: 14px; }
+        .chat-empty-icon { font-size: 40px; }
+        .chat-msg { max-width: 68%; padding: 11px 15px; border-radius: 16px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+        .chat-msg.user { align-self: flex-end; background: #5b21b6; color: white; border-radius: 16px 16px 4px 16px; }
+        .chat-msg.model { align-self: flex-start; background: white; color: #1a1a2e; border: 1px solid #e5e7eb; border-radius: 16px 16px 16px 4px; }
+        .chat-input-area { display: flex; gap: 10px; background: white; border: 1.5px solid #e5e7eb; border-radius: 14px; padding: 10px 14px; transition: border-color .15s; flex-shrink: 0; }
+        .chat-input-area:focus-within { border-color: #7c3aed; }
+        .chat-input { flex: 1; border: none; outline: none; font-size: 14px; resize: none; height: 40px; font-family: inherit; background: transparent; }
+        .chat-send { background: #5b21b6; color: white; border: none; border-radius: 10px; padding: 8px 18px; cursor: pointer; font-size: 14px; font-weight: 600; transition: background .15s; }
+        .chat-send:hover { background: #4c1d95; }
+        .chat-send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        /* ===== COMING SOON ===== */
+        .coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; }
+        .coming-soon-icon { font-size: 52px; }
+        .coming-soon-title { font-size: 22px; font-weight: 700; color: #374151; }
+        .coming-soon-desc { font-size: 14px; color: #9ca3af; text-align: center; max-width: 300px; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -469,14 +495,14 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">plumia</div>
-        <div class="sidebar-item" title="Crear nuevo"><span class="si-icon">✏️</span><span>Crear<br>nuevo</span></div>
-        <div class="sidebar-item active" title="Parafrasear"><span class="si-icon">↔️</span><span>Parafrasear</span></div>
-        <div class="sidebar-item" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
-        <div class="sidebar-item" title="Corrector ortográfico"><span class="si-icon">✓</span><span>Corrector<br>ortog.</span></div>
-        <div class="sidebar-item" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
-        <div class="sidebar-item" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
-        <div class="sidebar-item" title="Humanizador de IA"><span class="si-icon">🪄</span><span>Humaniz.<br>de IA</span></div>
-        <div class="sidebar-item" title="Chat IA"><span class="si-icon">💬</span><span>Chat IA</span></div>
+        <div class="sidebar-item" id="sbNew" onclick="handleNewDoc()" title="Crear nuevo"><span class="si-icon">✏️</span><span>Crear<br>nuevo</span></div>
+        <div class="sidebar-item active" id="sbParaphrase" onclick="switchPanel('paraphrase','sbParaphrase','Parafrasear')" title="Parafrasear"><span class="si-icon">↔️</span><span>Parafrasear</span></div>
+        <div class="sidebar-item" id="sbProyectos" onclick="switchPanel('coming-soon','sbProyectos','Proyectos','📁')" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
+        <div class="sidebar-item" id="sbCorrector" onclick="switchPanel('corrector','sbCorrector','Corrector ortográfico')" title="Corrector ortográfico"><span class="si-icon">✓</span><span>Corrector<br>ortog.</span></div>
+        <div class="sidebar-item" id="sbDetectorIA" onclick="switchPanel('coming-soon','sbDetectorIA','Detector de IA','✨')" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
+        <div class="sidebar-item" id="sbDetectorPlagio" onclick="switchPanel('coming-soon','sbDetectorPlagio','Detector de plagio','🔍')" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
+        <div class="sidebar-item" id="sbHumanizador" onclick="switchPanel('humanizador','sbHumanizador','Humanizador de IA')" title="Humanizador de IA"><span class="si-icon">🪄</span><span>Humaniz.<br>de IA</span></div>
+        <div class="sidebar-item" id="sbChat" onclick="switchPanel('chat','sbChat','Chat IA')" title="Chat IA"><span class="si-icon">💬</span><span>Chat IA</span></div>
         <div class="sidebar-item" title="Más"><span class="si-icon">···</span><span>Más</span></div>
         <div class="sidebar-spacer"></div>
         <div class="sidebar-item" id="sidebarLogout" onclick="handleLogout()" title="Cerrar sesión" style="display:none">
@@ -489,7 +515,7 @@
 
         <!-- Header -->
         <div class="app-header">
-            <div class="header-title">Parafrasear</div>
+            <div class="header-title" id="headerTitle">Parafrasear</div>
             <div class="header-right">
                 <!-- Logged out -->
                 <div id="headerGuest">
@@ -504,6 +530,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- ===== PANEL: PARAFRASEAR ===== -->
+        <div id="panelParaphrase" class="panel active">
 
         <!-- Mode tabs -->
         <div class="mode-tabs-bar">
@@ -559,6 +588,88 @@
             </div>
 
         </div>
+
+        </div><!-- /panelParaphrase -->
+
+        <!-- ===== PANEL: CORRECTOR ===== -->
+        <div id="panelCorrector" class="panel">
+            <div class="tool-hint">Pega tu texto y Plumia corregirá automáticamente la ortografía y gramática.</div>
+            <div class="editor-body">
+                <div class="editor-card">
+                    <div class="editor-hint">Escribe o pega el texto que quieres corregir.</div>
+                    <div class="editor-btns">
+                        <button class="btn-sm" onclick="pasteToEl('correctorInput')">📋 Pegar</button>
+                        <button class="btn-sm" onclick="clearTool('corrector')">✕ Limpiar</button>
+                    </div>
+                    <textarea class="input-text" id="correctorInput" placeholder="Escribe o pega tu texto aquí..."></textarea>
+                    <div class="card-footer">
+                        <span></span>
+                        <button class="btn-paraphrase" id="correctorBtn" onclick="handleCorrector()">Corregir</button>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <div id="correctorPlaceholder" class="result-placeholder">El texto corregido aparecerá aquí.</div>
+                    <div id="correctorSpinner" class="spinner-row"><div class="spinner"></div>Corrigiendo texto...</div>
+                    <div id="correctorResult" class="result-text"></div>
+                    <div id="correctorFooter" class="result-footer">
+                        <button class="btn-sm" onclick="copyEl('correctorResult')">📋 Copiar resultado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL: HUMANIZADOR ===== -->
+        <div id="panelHumanizador" class="panel">
+            <div class="tool-hint">Convierte texto generado por IA en texto con tono natural y humano.</div>
+            <div class="editor-body">
+                <div class="editor-card">
+                    <div class="editor-hint">Pega el texto generado por IA que quieres humanizar.</div>
+                    <div class="editor-btns">
+                        <button class="btn-sm" onclick="pasteToEl('humanizadorInput')">📋 Pegar</button>
+                        <button class="btn-sm" onclick="clearTool('humanizador')">✕ Limpiar</button>
+                    </div>
+                    <textarea class="input-text" id="humanizadorInput" placeholder="Pega el texto de IA aquí..."></textarea>
+                    <div class="card-footer">
+                        <span></span>
+                        <button class="btn-paraphrase" id="humanizadorBtn" onclick="handleHumanizador()">Humanizar</button>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <div id="humanizadorPlaceholder" class="result-placeholder">El texto humanizado aparecerá aquí.</div>
+                    <div id="humanizadorSpinner" class="spinner-row"><div class="spinner"></div>Humanizando texto...</div>
+                    <div id="humanizadorResult" class="result-text"></div>
+                    <div id="humanizadorFooter" class="result-footer">
+                        <button class="btn-sm" onclick="copyEl('humanizadorResult')">📋 Copiar resultado</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL: CHAT ===== -->
+        <div id="panelChat" class="panel">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-empty" id="chatEmpty">
+                        <div class="chat-empty-icon">💬</div>
+                        <div>Empieza una conversación con la IA</div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <textarea class="chat-input" id="chatInput" placeholder="Escribe tu mensaje..." rows="1"></textarea>
+                    <button class="chat-send" id="chatSendBtn" onclick="handleChat()">Enviar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PANEL: PRÓXIMAMENTE ===== -->
+        <div id="panelComingSoon" class="panel">
+            <div class="coming-soon">
+                <div class="coming-soon-icon" id="comingSoonIcon">🔜</div>
+                <div class="coming-soon-title" id="comingSoonTitle">Próximamente</div>
+                <div class="coming-soon-desc">Esta función está en desarrollo y estará disponible pronto en Plumia.</div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -890,6 +1001,203 @@
         if (e.key === 'Escape') {
             closeAuthModal();
             closeLimitModal();
+        }
+    });
+
+    // ===== PANEL SWITCHING =====
+
+    const PANEL_MAP = {
+        'paraphrase': 'panelParaphrase',
+        'corrector': 'panelCorrector',
+        'humanizador': 'panelHumanizador',
+        'chat': 'panelChat',
+        'coming-soon': 'panelComingSoon'
+    };
+
+    let activeSidebarId = 'sbParaphrase';
+
+    function switchPanel(name, sidebarId, title, csIcon) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(activeSidebarId).classList.remove('active');
+        activeSidebarId = sidebarId;
+        document.getElementById(sidebarId).classList.add('active');
+        document.getElementById(PANEL_MAP[name]).classList.add('active');
+        document.getElementById('headerTitle').textContent = title;
+        if (name === 'coming-soon') {
+            document.getElementById('comingSoonTitle').textContent = title;
+            document.getElementById('comingSoonIcon').textContent = csIcon || '🔜';
+        }
+    }
+
+    function handleNewDoc() {
+        clearText();
+        switchPanel('paraphrase', 'sbParaphrase', 'Parafrasear');
+    }
+
+    // ===== CORRECTOR =====
+
+    async function handleCorrector() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const text = document.getElementById('correctorInput').value.trim();
+        if (!text) { alert('Escribe algo para corregir.'); return; }
+
+        const btn = document.getElementById('correctorBtn');
+        btn.disabled = true;
+        document.getElementById('correctorSpinner').style.display = 'flex';
+        document.getElementById('correctorPlaceholder').style.display = 'none';
+        document.getElementById('correctorResult').style.display = 'none';
+        document.getElementById('correctorFooter').style.display = 'none';
+
+        try {
+            const res = await fetch(`${API_URL}/paraphrase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ text, mode: 'corregir', custom_instruction: null, language: 'es' })
+            });
+            const data = await res.json();
+            document.getElementById('correctorSpinner').style.display = 'none';
+            if (!res.ok) {
+                document.getElementById('correctorPlaceholder').textContent = 'Error: ' + (data.detail || 'No se pudo corregir.');
+                document.getElementById('correctorPlaceholder').style.display = 'block';
+            } else {
+                document.getElementById('correctorResult').textContent = data.result;
+                document.getElementById('correctorResult').style.display = 'block';
+                document.getElementById('correctorFooter').style.display = 'flex';
+            }
+        } catch {
+            document.getElementById('correctorSpinner').style.display = 'none';
+            document.getElementById('correctorPlaceholder').textContent = 'Error de conexión.';
+            document.getElementById('correctorPlaceholder').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // ===== HUMANIZADOR =====
+
+    async function handleHumanizador() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const text = document.getElementById('humanizadorInput').value.trim();
+        if (!text) { alert('Pega un texto para humanizar.'); return; }
+
+        const btn = document.getElementById('humanizadorBtn');
+        btn.disabled = true;
+        document.getElementById('humanizadorSpinner').style.display = 'flex';
+        document.getElementById('humanizadorPlaceholder').style.display = 'none';
+        document.getElementById('humanizadorResult').style.display = 'none';
+        document.getElementById('humanizadorFooter').style.display = 'none';
+
+        try {
+            const res = await fetch(`${API_URL}/paraphrase`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ text, mode: 'humanizar', custom_instruction: null, language: 'es' })
+            });
+            const data = await res.json();
+            document.getElementById('humanizadorSpinner').style.display = 'none';
+            if (!res.ok) {
+                document.getElementById('humanizadorPlaceholder').textContent = 'Error: ' + (data.detail || 'No se pudo humanizar.');
+                document.getElementById('humanizadorPlaceholder').style.display = 'block';
+            } else {
+                document.getElementById('humanizadorResult').textContent = data.result;
+                document.getElementById('humanizadorResult').style.display = 'block';
+                document.getElementById('humanizadorFooter').style.display = 'flex';
+            }
+        } catch {
+            document.getElementById('humanizadorSpinner').style.display = 'none';
+            document.getElementById('humanizadorPlaceholder').textContent = 'Error de conexión.';
+            document.getElementById('humanizadorPlaceholder').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    // ===== CHAT =====
+
+    let chatHistory = [];
+
+    async function handleChat() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        input.value = '';
+        document.getElementById('chatEmpty').style.display = 'none';
+
+        appendChatMsg('user', message);
+        chatHistory.push({ role: 'user', text: message });
+
+        const btn = document.getElementById('chatSendBtn');
+        btn.disabled = true;
+        const loadingEl = appendChatMsg('model', '···');
+
+        try {
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ message, history: chatHistory.slice(0, -1) })
+            });
+            const data = await res.json();
+            const reply = res.ok ? data.response : (data.detail || 'Error al responder.');
+            loadingEl.textContent = reply;
+            if (res.ok) chatHistory.push({ role: 'model', text: reply });
+        } catch {
+            loadingEl.textContent = 'Error de conexión.';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    function appendChatMsg(role, text) {
+        const msgs = document.getElementById('chatMessages');
+        const el = document.createElement('div');
+        el.className = `chat-msg ${role}`;
+        el.textContent = text;
+        msgs.appendChild(el);
+        msgs.scrollTop = msgs.scrollHeight;
+        return el;
+    }
+
+    // ===== SHARED TOOL HELPERS =====
+
+    async function pasteToEl(id) {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById(id).value = text;
+        } catch {
+            alert('No se pudo acceder al portapapeles. Pega con Ctrl+V.');
+        }
+    }
+
+    function clearTool(name) {
+        document.getElementById(name + 'Input').value = '';
+        document.getElementById(name + 'Result').textContent = '';
+        document.getElementById(name + 'Result').style.display = 'none';
+        document.getElementById(name + 'Placeholder').textContent = name === 'corrector'
+            ? 'El texto corregido aparecerá aquí.'
+            : 'El texto humanizado aparecerá aquí.';
+        document.getElementById(name + 'Placeholder').style.display = 'block';
+        document.getElementById(name + 'Footer').style.display = 'none';
+        document.getElementById(name + 'Spinner').style.display = 'none';
+    }
+
+    function copyEl(id) {
+        const text = document.getElementById(id).textContent;
+        if (!text) return;
+        navigator.clipboard.writeText(text).then(() => alert('Copiado al portapapeles.'));
+    }
+
+    // ===== CHAT ENTER KEY =====
+    document.addEventListener('DOMContentLoaded', () => {
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+            chatInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleChat();
+                }
+            });
         }
     });
 

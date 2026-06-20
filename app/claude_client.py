@@ -15,6 +15,7 @@ MODE_INSTRUCTIONS = {
     "creativo": "Reescribe el texto de forma creativa y expresiva, variando la estructura de las frases.",
     "ampliar": "Reescribe el texto añadiendo más detalle y desarrollo de las ideas, ampliando claramente su extensión.",
     "acortar": "Reescribe el texto de forma mucho más breve y concisa, manteniendo solo las ideas esenciales.",
+    "corregir": "Corrige todos los errores ortográficos, gramaticales y de puntuación del siguiente texto. Mantén el estilo, estructura y significado original tal cual. Solo corrige los errores, no reescribas ni parafrasees.",
 }
 
 
@@ -28,6 +29,16 @@ def get_client():
             )
         _client = genai.Client(api_key=settings.gemini_api_key)
     return _client
+
+
+def chat(message: str, history: list) -> str:
+    contents = []
+    for msg in history:
+        contents.append({"role": msg["role"], "parts": [{"text": msg["text"]}]})
+    contents.append({"role": "user", "parts": [{"text": message}]})
+    client = get_client()
+    response = client.models.generate_content(model="gemini-flash-lite-latest", contents=contents)
+    return response.text.strip()
 
 
 def paraphrase(text: str, mode: str, custom_instruction: Optional[str], language: str) -> str:
