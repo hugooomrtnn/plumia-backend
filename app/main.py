@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine
-from .routers import auth, users, documents, paraphrase, chat, detect_ai
+from .routers import auth, users, documents, paraphrase, chat, detect_ai, detect_plagiarism
 
 # Crea las tablas si no existen. Para un proyecto que vaya a crecer mucho,
 # en algún momento conviene cambiar esto por migraciones con Alembic.
@@ -29,6 +29,7 @@ app.include_router(documents.router)
 app.include_router(paraphrase.router)
 app.include_router(chat.router)
 app.include_router(detect_ai.router)
+app.include_router(detect_plagiarism.router)
 
 
 @app.get("/")

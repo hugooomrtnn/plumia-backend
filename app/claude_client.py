@@ -31,6 +31,32 @@ def get_client():
     return _client
 
 
+def detect_plagiarism(text: str) -> dict:
+    import json, re
+    prompt = (
+        "Actúa como una herramienta de análisis de originalidad de texto. "
+        "Analiza el siguiente texto y evalúa su originalidad basándote en: "
+        "uso de frases genéricas o clichés, consistencia de estilo y voz narrativa, "
+        "y patrones que puedan indicar texto copiado o no original. "
+        "Responde ÚNICAMENTE con un objeto JSON con esta estructura exacta, sin texto adicional:\n"
+        "{\"risk\": \"Bajo\", \"originality\": 92, \"summary\": \"El texto parece original...\", \"flags\": [\"frase sospechosa 1\"]}\n"
+        "'risk' debe ser exactamente 'Bajo', 'Medio' o 'Alto'. "
+        "'originality' es el porcentaje estimado de originalidad (0-100). "
+        "'summary' es un párrafo breve en español. "
+        "'flags' es una lista de hasta 3 frases sospechosas (puede ser lista vacía []).\n\n"
+        "Texto a analizar:\n" + text
+    )
+    client = get_client()
+    response = client.models.generate_content(model="gemini-flash-lite-latest", contents=prompt)
+    match = re.search(r'\{.*?\}', response.text.strip(), re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group())
+        except Exception:
+            pass
+    return {"risk": "Desconocido", "originality": 0, "summary": "No se pudo analizar el texto.", "flags": []}
+
+
 def detect_ai(text: str) -> dict:
     import json, re
     prompt = (

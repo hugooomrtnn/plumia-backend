@@ -504,6 +504,19 @@
         .detector-reason-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; width: 100%; max-width: 420px; }
         .detector-reason-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
 
+        /* ===== DETECTOR PLAGIO RESULT ===== */
+        .plagio-result { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 24px; width: 100%; }
+        .plagio-score-row { display: flex; align-items: center; gap: 20px; }
+        .plagio-score { font-size: 48px; font-weight: 800; color: #1a1a2e; }
+        .plagio-score span { font-size: 22px; font-weight: 600; color: #6b7280; }
+        .plagio-risk-badge { padding: 5px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+        .plagio-risk-badge.low { background: #dcfce7; color: #16a34a; }
+        .plagio-risk-badge.mid { background: #fef9c3; color: #ca8a04; }
+        .plagio-risk-badge.high { background: #fee2e2; color: #dc2626; }
+        .plagio-disclaimer { font-size: 11px; color: #9ca3af; text-align: center; }
+        .plagio-flags { font-size: 13px; color: #374151; display: flex; flex-direction: column; gap: 4px; width: 100%; max-width: 420px; }
+        .plagio-flag-item { background: #fef9c3; border-left: 3px solid #ca8a04; padding: 6px 10px; border-radius: 0 6px 6px 0; font-style: italic; }
+
         /* ===== COMING SOON ===== */
         .coming-soon { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 14px; }
         .coming-soon-icon { font-size: 52px; }
@@ -524,7 +537,7 @@
         <div class="sidebar-item" id="sbProyectos" onclick="switchPanel('proyectos','sbProyectos','Proyectos')" title="Proyectos"><span class="si-icon">📁</span><span>Proyectos</span></div>
         <div class="sidebar-item" id="sbCorrector" onclick="switchPanel('corrector','sbCorrector','Corrector ortográfico')" title="Corrector ortográfico"><span class="si-icon">✓</span><span>Corrector<br>ortog.</span></div>
         <div class="sidebar-item" id="sbDetectorIA" onclick="switchPanel('detector-ia','sbDetectorIA','Detector de IA')" title="Detector de IA"><span class="si-icon">✨</span><span>Detector<br>de IA</span></div>
-        <div class="sidebar-item" id="sbDetectorPlagio" onclick="switchPanel('coming-soon','sbDetectorPlagio','Detector de plagio','🔍')" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
+        <div class="sidebar-item" id="sbDetectorPlagio" onclick="switchPanel('detector-plagio','sbDetectorPlagio','Detector de plagio')" title="Detector de plagio"><span class="si-icon">🔍</span><span>Detector<br>plagio</span></div>
         <div class="sidebar-item" id="sbHumanizador" onclick="switchPanel('humanizador','sbHumanizador','Humanizador de IA')" title="Humanizador de IA"><span class="si-icon">🪄</span><span>Humaniz.<br>de IA</span></div>
         <div class="sidebar-item" title="Más"><span class="si-icon">···</span><span>Más</span></div>
         <div class="sidebar-spacer"></div>
@@ -711,12 +724,45 @@
             </div>
         </div>
 
-        <!-- ===== PANEL: PRÓXIMAMENTE ===== -->
-        <div id="panelComingSoon" class="panel">
-            <div class="coming-soon">
-                <div class="coming-soon-icon" id="comingSoonIcon">🔜</div>
-                <div class="coming-soon-title" id="comingSoonTitle">Próximamente</div>
-                <div class="coming-soon-desc">Esta función está en desarrollo y estará disponible pronto en Plumia.</div>
+        <!-- ===== PANEL: DETECTOR DE PLAGIO ===== -->
+        <div id="panelDetectorPlagio" class="panel">
+            <div class="tool-hint">Análisis de originalidad basado en IA · No realiza búsqueda en Internet</div>
+            <div class="editor-body">
+                <div class="editor-card">
+                    <div class="editor-hint">Pega el texto que quieres analizar.</div>
+                    <div class="editor-btns">
+                        <button class="btn-sm" onclick="pasteToEl('plagioInput')">📋 Pegar</button>
+                        <button class="btn-sm" onclick="clearPlagio()">✕ Limpiar</button>
+                    </div>
+                    <textarea class="input-text" id="plagioInput" placeholder="Pega aquí el texto a analizar..."></textarea>
+                    <div class="card-footer">
+                        <span></span>
+                        <button class="btn-paraphrase" id="plagioBtn" onclick="handleDetectorPlagio()">Analizar</button>
+                    </div>
+                </div>
+                <div class="result-card">
+                    <div id="plagioPlaceholder" class="result-placeholder">El análisis de originalidad aparecerá aquí.</div>
+                    <div id="plagioSpinner" class="spinner-row"><div class="spinner"></div>Analizando originalidad...</div>
+                    <div id="plagioResult" style="display:none; overflow-y:auto; flex:1;">
+                        <div class="plagio-result">
+                            <div class="plagio-score-row">
+                                <div class="plagio-score" id="plagioScoreEl">—<span>%</span></div>
+                                <div class="plagio-risk-badge" id="plagioRiskEl">—</div>
+                            </div>
+                            <div class="plagio-disclaimer">Análisis estimado por IA · No garantiza ausencia de plagio real</div>
+                            <div class="detector-reason-box" style="width:100%; max-width:420px;">
+                                <div class="detector-reason-label">Resumen</div>
+                                <div style="font-size:14px; color:#374151; line-height:1.55;" id="plagioSummaryEl"></div>
+                            </div>
+                            <div id="plagioFlagsBox" style="display:none; width:100%; max-width:420px;">
+                                <div class="detector-reason-box">
+                                    <div class="detector-reason-label">Frases a revisar</div>
+                                    <div class="plagio-flags" id="plagioFlagsEl"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1062,7 +1108,7 @@
         'humanizador': 'panelHumanizador',
         'proyectos': 'panelProyectos',
         'detector-ia': 'panelDetectorIA',
-        'coming-soon': 'panelComingSoon'
+        'detector-plagio': 'panelDetectorPlagio'
     };
 
     let activeSidebarId = 'sbParaphrase';
@@ -1266,6 +1312,59 @@
             document.getElementById('detectorIAPlaceholder').textContent = 'Error de conexión.';
             document.getElementById('detectorIAPlaceholder').style.display = 'block';
         } finally { btn.disabled = false; }
+    }
+
+    // ===== DETECTOR DE PLAGIO =====
+
+    async function handleDetectorPlagio() {
+        if (!authToken) { openAuthModal('login'); return; }
+        const text = document.getElementById('plagioInput').value.trim();
+        if (!text) { alert('Pega un texto para analizar.'); return; }
+        const btn = document.getElementById('plagioBtn');
+        btn.disabled = true;
+        document.getElementById('plagioSpinner').style.display = 'flex';
+        document.getElementById('plagioPlaceholder').style.display = 'none';
+        document.getElementById('plagioResult').style.display = 'none';
+        try {
+            const res = await fetch(`${API_URL}/detect-plagiarism`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            document.getElementById('plagioSpinner').style.display = 'none';
+            if (!res.ok) {
+                document.getElementById('plagioPlaceholder').textContent = data.detail || 'Error al analizar.';
+                document.getElementById('plagioPlaceholder').style.display = 'block';
+            } else {
+                document.getElementById('plagioScoreEl').innerHTML = `${data.originality}<span>%</span>`;
+                const riskEl = document.getElementById('plagioRiskEl');
+                riskEl.textContent = { 'Bajo': 'Riesgo bajo', 'Medio': 'Riesgo medio', 'Alto': 'Riesgo alto' }[data.risk] || data.risk;
+                riskEl.className = 'plagio-risk-badge ' + { 'Bajo': 'low', 'Medio': 'mid', 'Alto': 'high' }[data.risk] || '';
+                document.getElementById('plagioSummaryEl').textContent = data.summary;
+                const flagsBox = document.getElementById('plagioFlagsBox');
+                const flagsEl = document.getElementById('plagioFlagsEl');
+                if (data.flags && data.flags.length > 0) {
+                    flagsEl.innerHTML = data.flags.map(f => `<div class="plagio-flag-item">${escHtml(f)}</div>`).join('');
+                    flagsBox.style.display = 'block';
+                } else {
+                    flagsBox.style.display = 'none';
+                }
+                document.getElementById('plagioResult').style.display = 'block';
+            }
+        } catch {
+            document.getElementById('plagioSpinner').style.display = 'none';
+            document.getElementById('plagioPlaceholder').textContent = 'Error de conexión.';
+            document.getElementById('plagioPlaceholder').style.display = 'block';
+        } finally { btn.disabled = false; }
+    }
+
+    function clearPlagio() {
+        document.getElementById('plagioInput').value = '';
+        document.getElementById('plagioPlaceholder').textContent = 'El análisis de originalidad aparecerá aquí.';
+        document.getElementById('plagioPlaceholder').style.display = 'block';
+        document.getElementById('plagioResult').style.display = 'none';
+        document.getElementById('plagioSpinner').style.display = 'none';
     }
 
     function clearDetectorIA() {
