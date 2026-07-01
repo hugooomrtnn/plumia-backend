@@ -1328,8 +1328,9 @@
             } else {
                 const verdictEl = document.getElementById('detectorIAVerdictEl');
                 verdictEl.textContent = data.verdict;
-                verdictEl.className = 'detector-verdict ' + { 'Humano': 'human', 'IA': 'ai', 'Mixto': 'mixed' }[data.verdict] || '';
-                document.getElementById('detectorIAConfidenceEl').textContent = `${data.confidence}% de confianza`;
+                verdictEl.className = 'detector-verdict ' + ({ 'Humano': 'human', 'IA': 'ai', 'Mixto': 'mixed' }[data.verdict] || '');
+                const aiPct = data.verdict === 'IA' ? data.confidence : data.verdict === 'Humano' ? 100 - data.confidence : 50;
+                document.getElementById('detectorIAConfidenceEl').textContent = `${aiPct}% de IA`;
                 document.getElementById('detectorIAReasonEl').textContent = data.reason;
                 document.getElementById('detectorIAResult').style.display = 'block';
             }
