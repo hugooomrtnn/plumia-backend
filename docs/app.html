@@ -963,14 +963,10 @@
         document.getElementById('wcText').textContent = `${words} palabras`;
     }
 
-    async function pasteFromClipboard() {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('originalText').value = text;
-            updateWordCount();
-        } catch {
-            alert('No se pudo acceder al portapapeles. Pega con Ctrl+V.');
-        }
+    function pasteFromClipboard() {
+        const el = document.getElementById('originalText');
+        el.focus();
+        document.execCommand('paste');
     }
 
     function clearText() {
@@ -1404,13 +1400,10 @@
 
     // ===== SHARED TOOL HELPERS =====
 
-    async function pasteToEl(id) {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById(id).value = text;
-        } catch {
-            alert('No se pudo acceder al portapapeles. Pega con Ctrl+V.');
-        }
+    function pasteToEl(id) {
+        const el = document.getElementById(id);
+        el.focus();
+        document.execCommand('paste');
     }
 
     function clearTool(name) {
