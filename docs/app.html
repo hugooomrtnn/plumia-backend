@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plumia - Parafraseo de Textos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -592,8 +594,10 @@
                 </div>
                 <div class="editor-btns">
                     <button class="btn-sm" onclick="pasteFromClipboard()">📋 Pegar</button>
+                    <button class="btn-sm" onclick="document.getElementById('fileUploadInput').click()">📄 Subir archivo</button>
                     <button class="btn-sm" onclick="clearText()">✕ Limpiar</button>
                 </div>
+                <input type="file" id="fileUploadInput" accept=".txt,.pdf,.docx" style="display:none" onchange="handleFileUpload(event)">
                 <div class="custom-instr" id="customInstrGroup">
                     <label>Instrucción personalizada</label>
                     <input type="text" id="customInstruction" placeholder="ej. Reescribe de forma más persuasiva y directa">
@@ -1429,6 +1433,48 @@
     // Init: mostrar la app directamente
     updateHeaderUI();
     updateWordCount();
+
+    // ===== FILE UPLOAD =====
+
+    async function handleFileUpload(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        let text = '';
+
+        try {
+            if (ext === 'txt') {
+                text = await file.text();
+            } else if (ext === 'pdf') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const pages = [];
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    pages.push(content.items.map(s => s.str).join(' '));
+                }
+                text = pages.join('\n\n');
+            } else if (ext === 'docx') {
+                const arrayBuffer = await file.arrayBuffer();
+                const result = await mammoth.extractRawText({ arrayBuffer });
+                text = result.value;
+            } else {
+                alert('Formato no soportado. Usa PDF, DOCX o TXT.');
+                return;
+            }
+
+            if (!text.trim()) { alert('No se pudo extraer texto del archivo.'); return; }
+            document.getElementById('originalText').value = text.trim();
+            updateWordCount();
+            switchPanel('paraphrase', 'sbParaphrase', 'Parafrasear');
+        } catch (e) {
+            alert('Error al leer el archivo. Asegúrate de que no está protegido con contraseña.');
+        }
+    }
 </script>
 </body>
 </html>
