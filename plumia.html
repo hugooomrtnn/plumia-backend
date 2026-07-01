@@ -1112,11 +1112,33 @@
     };
 
     let activeSidebarId = 'sbParaphrase';
+    let activePanel = 'paraphrase';
+
+    const PANEL_TEXT_IDS = {
+        'paraphrase': 'originalText',
+        'corrector': 'correctorInput',
+        'humanizador': 'humanizadorInput',
+        'detector-ia': 'detectorIAInput',
+        'detector-plagio': 'plagioInput'
+    };
+
+    function syncTextToPanel(targetPanel) {
+        if (targetPanel === activePanel || targetPanel === 'proyectos') return;
+        const sourceId = PANEL_TEXT_IDS[activePanel];
+        const targetId = PANEL_TEXT_IDS[targetPanel];
+        if (!sourceId || !targetId) return;
+        const sourceText = document.getElementById(sourceId).value;
+        if (sourceText.trim()) {
+            document.getElementById(targetId).value = sourceText;
+        }
+    }
 
     function switchPanel(name, sidebarId, title, csIcon) {
+        syncTextToPanel(name);
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
         document.getElementById(activeSidebarId).classList.remove('active');
         activeSidebarId = sidebarId;
+        activePanel = name;
         document.getElementById(sidebarId).classList.add('active');
         document.getElementById(PANEL_MAP[name]).classList.add('active');
         document.getElementById('headerTitle').textContent = title;
