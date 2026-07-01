@@ -7,15 +7,59 @@ from .config import settings
 _client = None
 
 MODE_INSTRUCTIONS = {
-    "estandar": "Reescribe el texto manteniendo su significado original, con un tono neutro y natural.",
-    "humanizar": "Reescribe el texto para que suene completamente natural y humano, evitando frases hechas o patrones típicos de un texto generado por IA.",
-    "formal": "Reescribe el texto en un tono formal y profesional, cuidando el registro.",
-    "academico": "Reescribe el texto con un registro académico, vocabulario preciso y estructura propia de un texto académico.",
-    "simple": "Reescribe el texto utilizando un lenguaje más simple y claro, con frases cortas y vocabulario accesible.",
-    "creativo": "Reescribe el texto de forma creativa y expresiva, variando la estructura de las frases.",
-    "ampliar": "Reescribe el texto añadiendo más detalle y desarrollo de las ideas, ampliando claramente su extensión.",
-    "acortar": "Reescribe el texto de forma mucho más breve y concisa, manteniendo solo las ideas esenciales.",
-    "corregir": "Corrige todos los errores ortográficos, gramaticales y de puntuación del siguiente texto. Mantén el estilo, estructura y significado original tal cual. Solo corrige los errores, no reescribas ni parafrasees.",
+    "estandar": (
+        "Reescribe el siguiente texto de forma que parezca escrito por un humano real. "
+        "Varía la longitud de las frases: mezcla frases cortas con otras más largas. "
+        "Usa vocabulario variado pero natural, sin palabras rebuscadas. "
+        "Evita estructuras repetitivas, transiciones genéricas como 'En conclusión', 'Es importante destacar', 'Cabe mencionar' o 'En el contexto de'. "
+        "El resultado debe ser fluido, directo y con la imperfección natural del lenguaje humano. "
+        "Mantén el significado original."
+    ),
+    "humanizar": (
+        "Reescribe este texto para que supere cualquier detector de IA universitario o profesional. "
+        "Aplica estas técnicas: "
+        "1) Varía drásticamente la longitud de las frases (algunas muy cortas, de 3-5 palabras; otras más largas). "
+        "2) Usa expresiones coloquiales o giros propios del español hablado cuando encaje. "
+        "3) Elimina por completo frases hechas típicas de IA: 'Es fundamental destacar', 'En el marco de', 'Cabe señalar', 'En conclusión', 'En resumen', 'Es importante mencionar'. "
+        "4) Rompe el ritmo uniforme: usa puntos y seguido frecuentes, alguna pregunta retórica, o una frase muy directa. "
+        "5) Introduce ligeras variaciones de perspectiva o énfasis que un humano añadiría naturalmente. "
+        "El resultado debe ser completamente indetectable como texto de IA."
+    ),
+    "formal": (
+        "Reescribe el texto en un tono formal y profesional. "
+        "Usa un registro cuidado pero sin caer en frases genéricas de IA. "
+        "Varía la estructura de las oraciones y mantén un estilo propio y coherente."
+    ),
+    "academico": (
+        "Reescribe el texto con registro académico: vocabulario preciso, argumentación clara y estructura formal. "
+        "Evita clichés de escritura automática. Usa conectores variados y apropiados para el género académico. "
+        "El texto debe sonar como escrito por un estudiante o investigador humano experto."
+    ),
+    "simple": (
+        "Reescribe el texto con lenguaje muy simple y directo. "
+        "Frases cortas. Palabras de uso común. Sin tecnicismos ni rodeos. "
+        "Como si se lo explicaras a alguien que no conoce el tema."
+    ),
+    "creativo": (
+        "Reescribe el texto de forma creativa y expresiva. "
+        "Experimenta con la estructura: cambia el orden de las ideas, usa metáforas si encajan, varía el ritmo. "
+        "El resultado debe ser memorable y con personalidad propia."
+    ),
+    "ampliar": (
+        "Reescribe el texto desarrollando más cada idea: añade ejemplos, matices o explicaciones adicionales. "
+        "Amplía claramente la extensión pero mantén la coherencia. "
+        "No rellenes con frases vacías; cada añadido debe aportar valor real."
+    ),
+    "acortar": (
+        "Reescribe el texto de forma muy concisa, conservando solo las ideas esenciales. "
+        "Elimina repeticiones, adjetivos innecesarios y rodeos. "
+        "El resultado debe ser directo y sustancioso."
+    ),
+    "corregir": (
+        "Corrige todos los errores ortográficos, gramaticales y de puntuación del siguiente texto. "
+        "Mantén el estilo, estructura y significado original tal cual. "
+        "Solo corrige los errores, no reescribas ni parafrasees."
+    ),
 }
 
 
@@ -60,11 +104,23 @@ def detect_plagiarism(text: str) -> dict:
 def detect_ai(text: str) -> dict:
     import json, re
     prompt = (
-        "Analiza el siguiente texto y determina si fue escrito por un humano o generado por IA. "
+        "Eres un detector de texto generado por IA de nivel universitario, equivalente a GPTZero o Turnitin AI Detection. "
+        "Analiza el siguiente texto con criterio estricto y busca estos indicadores de texto generado por IA:\n"
+        "INDICADORES DE IA: frases de longitud uniforme y ritmo constante, uso de transiciones genéricas "
+        "('En conclusión', 'Es importante destacar', 'Cabe mencionar', 'En el marco de', 'Es fundamental', "
+        "'En el contexto de', 'Cabe señalar'), vocabulario excesivamente formal y sin variación de registro, "
+        "ausencia de anécdotas o experiencias personales, estructura perfectamente organizada sin digresiones, "
+        "falta de opiniones directas o emociones, redundancias explicativas, párrafos de extensión similar.\n"
+        "INDICADORES HUMANOS: variación notable en la longitud de frases, expresiones coloquiales o informales, "
+        "errores menores o correcciones, digresiones o ideas no perfectamente hiladas, voz personal y opiniones "
+        "directas, vocabulario desigual (mezcla de registros), estructura irregular.\n"
+        "Sé estricto: si el texto tiene ritmo uniforme y transiciones típicas de IA, aunque esté 'humanizado', "
+        "debe recibir una puntuación alta de IA. Solo texto con características humanas claras merece veredicto 'Humano'.\n"
         "Responde ÚNICAMENTE con un objeto JSON con esta estructura exacta, sin texto adicional:\n"
-        "{\"verdict\": \"Humano\", \"confidence\": 85, \"reason\": \"El texto presenta...\"}\n"
+        "{\"verdict\": \"IA\", \"confidence\": 87, \"reason\": \"El texto presenta...\"}\n"
         "El campo 'verdict' debe ser exactamente 'Humano', 'IA' o 'Mixto'. "
-        "'confidence' es un número del 0 al 100. 'reason' es una frase breve en español.\n\n"
+        "'confidence' es un número del 0 al 100 (qué seguro estás del veredicto). "
+        "'reason' es una explicación breve en español de los indicadores encontrados.\n\n"
         "Texto a analizar:\n" + text
     )
     client = get_client()
@@ -97,9 +153,11 @@ def paraphrase(text: str, mode: str, custom_instruction: Optional[str], language
     lang_line = "Responde en inglés." if language == "en" else "Responde en español."
 
     prompt = (
-        "Eres una herramienta de reescritura de texto. " + instruction +
-        " Responde ÚNICAMENTE con el texto reescrito, sin comentarios, explicaciones ni comillas adicionales. " +
-        lang_line + "\n\nTexto a reescribir:\n" + text
+        "Eres una herramienta de reescritura de texto experta en producir texto que suene genuinamente humano. "
+        + instruction +
+        " Responde ÚNICAMENTE con el texto reescrito, sin comentarios, introducciones, explicaciones ni comillas adicionales. "
+        "No escribas frases como 'Aquí tienes el texto reescrito' ni similares. Solo el texto. "
+        + lang_line + "\n\nTexto a reescribir:\n" + text
     )
 
     client = get_client()
