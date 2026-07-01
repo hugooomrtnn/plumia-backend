@@ -742,14 +742,14 @@
                 </div>
                 <div class="result-card">
                     <div id="plagioPlaceholder" class="result-placeholder">El análisis de originalidad aparecerá aquí.</div>
-                    <div id="plagioSpinner" class="spinner-row"><div class="spinner"></div>Analizando originalidad...</div>
+                    <div id="plagioSpinner" class="spinner-row"><div class="spinner"></div>Analizando plagio...</div>
                     <div id="plagioResult" style="display:none; overflow-y:auto; flex:1;">
                         <div class="plagio-result">
                             <div class="plagio-score-row">
                                 <div class="plagio-score" id="plagioScoreEl">—<span>%</span></div>
                                 <div class="plagio-risk-badge" id="plagioRiskEl">—</div>
                             </div>
-                            <div class="plagio-disclaimer">Análisis estimado por IA · No garantiza ausencia de plagio real</div>
+                            <div class="plagio-disclaimer">% de plagio estimado por IA · No garantiza ausencia de plagio real</div>
                             <div class="detector-reason-box" style="width:100%; max-width:420px;">
                                 <div class="detector-reason-label">Resumen</div>
                                 <div style="font-size:14px; color:#374151; line-height:1.55;" id="plagioSummaryEl"></div>
@@ -1359,7 +1359,7 @@
                 document.getElementById('plagioPlaceholder').textContent = data.detail || 'Error al analizar.';
                 document.getElementById('plagioPlaceholder').style.display = 'block';
             } else {
-                document.getElementById('plagioScoreEl').innerHTML = `${data.originality}<span>%</span>`;
+                document.getElementById('plagioScoreEl').innerHTML = `${100 - data.originality}<span>%</span>`;
                 const riskEl = document.getElementById('plagioRiskEl');
                 riskEl.textContent = { 'Bajo': 'Riesgo bajo', 'Medio': 'Riesgo medio', 'Alto': 'Riesgo alto' }[data.risk] || data.risk;
                 riskEl.className = 'plagio-risk-badge ' + { 'Bajo': 'low', 'Medio': 'mid', 'Alto': 'high' }[data.risk] || '';
