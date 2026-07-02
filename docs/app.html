@@ -861,6 +861,7 @@
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         const errDiv = document.getElementById('loginError');
+        const btn = document.querySelector('#modalLoginForm .btn-modal-main');
         errDiv.style.display = 'none';
 
         if (!email || !password) {
@@ -869,6 +870,8 @@
             return;
         }
 
+        btn.textContent = 'Conectando...';
+        btn.disabled = true;
         try {
             const res = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
@@ -887,8 +890,11 @@
             closeAuthModal();
             updateHeaderUI();
         } catch {
-            errDiv.textContent = 'Error de conexión. ¿Está el servidor corriendo?';
+            errDiv.textContent = 'Error de conexión. Espera unos segundos y vuelve a intentarlo.';
             errDiv.style.display = 'block';
+        } finally {
+            btn.textContent = 'Iniciar sesión';
+            btn.disabled = false;
         }
     }
 
@@ -897,6 +903,7 @@
         const password = document.getElementById('registerPassword').value;
         const errDiv = document.getElementById('registerError');
         const okDiv = document.getElementById('registerSuccess');
+        const btn = document.querySelector('#modalRegisterForm .btn-modal-main');
         errDiv.style.display = 'none';
         okDiv.style.display = 'none';
 
@@ -905,7 +912,14 @@
             errDiv.style.display = 'block';
             return;
         }
+        if (password.length < 6) {
+            errDiv.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+            errDiv.style.display = 'block';
+            return;
+        }
 
+        btn.textContent = 'Creando cuenta...';
+        btn.disabled = true;
         try {
             const res = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
@@ -924,10 +938,16 @@
             document.getElementById('registerPassword').value = '';
             setTimeout(() => switchModalForm('login'), 2000);
         } catch {
-            errDiv.textContent = 'Error de conexión.';
+            errDiv.textContent = 'Error de conexión. Espera unos segundos y vuelve a intentarlo.';
             errDiv.style.display = 'block';
+        } finally {
+            btn.textContent = 'Crear cuenta';
+            btn.disabled = false;
         }
     }
+
+    // Mantiene el backend despierto para evitar cold starts en Render
+    setInterval(() => fetch(`${API_URL}/`).catch(() => {}), 10 * 60 * 1000);
 
     async function fetchUserInfo() {}
 
