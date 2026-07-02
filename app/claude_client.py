@@ -50,10 +50,16 @@ MODE_INSTRUCTIONS = {
         "Amplía claramente la extensión pero mantén la coherencia. "
         "No rellenes con frases vacías; cada añadido debe aportar valor real."
     ),
-    "acortar": (
-        "Reescribe el texto de forma muy concisa, conservando solo las ideas esenciales. "
-        "Elimina repeticiones, adjetivos innecesarios y rodeos. "
-        "El resultado debe ser directo y sustancioso."
+    "resumir": (
+        "Eres un experto resumidor de textos en español. Tu tarea es crear un resumen completo y bien estructurado del texto que te proporcionen. "
+        "Sigue estas pautas estrictamente:\n"
+        "1. ESTRUCTURA: Organiza el resumen en párrafos claros. Si el texto tiene secciones o ideas principales diferenciadas, refléjalo en el resumen.\n"
+        "2. CONTENIDO: Extrae y conserva todas las ideas principales, datos importantes, conclusiones y argumentos clave. No omitas información relevante.\n"
+        "3. EXTENSIÓN: El resumen debe tener entre el 25% y el 35% de la longitud del texto original. Ni demasiado corto (que pierda información) ni demasiado largo (que no sea un resumen real).\n"
+        "4. LENGUAJE: Usa un lenguaje propio, fluido y natural. No copies frases literales del original salvo que sean definiciones o citas imprescindibles.\n"
+        "5. OBJETIVIDAD: Mantén el punto de vista del autor original. No añadas opiniones propias ni información externa.\n"
+        "6. COHESIÓN: Usa conectores apropiados (sin embargo, además, por tanto, en consecuencia, asimismo...) para que el resumen fluya de forma coherente.\n"
+        "El resultado debe ser un resumen que cualquier persona pueda leer para entender el texto original sin necesidad de leerlo."
     ),
     "corregir": (
         "Corrige todos los errores ortográficos, gramaticales y de puntuación del siguiente texto. "

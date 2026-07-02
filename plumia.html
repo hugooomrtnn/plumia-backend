@@ -581,7 +581,7 @@
             <button class="mode-tab" data-mode="simple" onclick="selectMode(this)">Simple</button>
             <button class="mode-tab" data-mode="creativo" onclick="selectMode(this)">Creativo</button>
             <button class="mode-tab" data-mode="ampliar" onclick="selectMode(this)">Ampliar</button>
-            <button class="mode-tab" data-mode="acortar" onclick="selectMode(this)">Acortar</button>
+            <button class="mode-tab" data-mode="resumir" onclick="selectMode(this)">Resumidor</button>
             <button class="mode-tab" data-mode="personalizado" onclick="selectMode(this)">Personalizado</button>
         </div>
 
@@ -953,6 +953,15 @@
         currentMode = el.dataset.mode;
         document.getElementById('customInstrGroup').style.display =
             currentMode === 'personalizado' ? 'block' : 'none';
+        const isResumidor = currentMode === 'resumir';
+        document.getElementById('paraphraseBtn').textContent = isResumidor ? 'Resumir' : 'Parafrasear';
+        document.getElementById('originalText').placeholder = isResumidor
+            ? 'Pega aquí el texto que quieres resumir...'
+            : 'Escribe o pega tu texto aquí...';
+        document.getElementById('resultPlaceholder').textContent = isResumidor
+            ? 'El resumen aparecerá aquí.'
+            : 'El resultado de tu reescritura aparecerá aquí.';
+        resetResult();
     }
 
     // ===== EDITOR =====
